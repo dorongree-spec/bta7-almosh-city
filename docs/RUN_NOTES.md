@@ -356,3 +356,22 @@ throwaway check script (not committed):
   data/encounters_zz_check.json was picked up as the 5th pack in the exe. Visitors came and
   asked three times in 70 s in both the editor run and the exe.
 - No script errors. Nothing needed fixing.
+
+## 25 Nov, last hour before "ready" (PC)
+
+Public repo. Tour 47-61 fps with vsync (map 47), 78 fps uncapped at the start; no script errors.
+
+- feb66f6: a car taken from the parked pool or from traffic always comes back into physics
+  (far parked cars are kept out of it; the tour's car sat at 0 km/h, now 88).
+- a0bf313: sitting, driving and dancing clips keep their own legs (the seated crew stood on
+  their chairs); set_idle applies at once; slimmer men; fitted shirts looser.
+- 8ec5be4: key art re-rendered with today's people; the hero leans on his car, arms crossed.
+- 98f43b8: real shorts (the trouser layer stops above the knee, real legs below); smooth
+  shoulders and a scoop neck; closer galabiya sleeves; hands at the front pockets.
+- Missions checked by script: car 15 m from the start; mission 1 queue, buy, deliver; mission 2
+  Suleiman, tow lot, Subara, escape, done. Mission 1 is 360 s for 3.5 km by road.
+
+Still weak: no petrol-station canopy or cobbled island at the bakery junction yet (the fuel
+points in the map sit on building outlines, so it needs a hand-placed spot); the galabiya
+neck is a wide scoop; bodies are still the athletic base model under the clothes; the
+poinciana and the cars are low-poly; the tour's "person" view is sometimes blocked by a tree.
