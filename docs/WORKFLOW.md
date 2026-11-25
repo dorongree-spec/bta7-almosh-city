@@ -4,7 +4,11 @@ This is how the original authors work day to day. If you want to contribute,
 [CONTRIBUTING.md](../CONTRIBUTING.md) is the guide for you; the photo tour and
 export sections below are useful to everyone.
 
-Two sides commit to `main`:
+All work happens in this public repository,
+`github.com/dorongree-spec/bta7-almosh-city`. (The game began in a private
+repository that is now archived; its history is not carried over.)
+
+Two sides of the original team commit here:
 
 - **Cloud side** writes game systems (new scripts, gameplay, generators) but
   cannot run Godot. Its code is syntax-checked with `gdparse` only.

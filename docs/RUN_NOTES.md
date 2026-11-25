@@ -357,6 +357,12 @@ throwaway check script (not committed):
   asked three times in 70 s in both the editor run and the exe.
 - No script errors. Nothing needed fixing.
 
+- 15:00: logo.png/icon.png re-imported (the editor cache still held the old Almosh mark), the
+  BTA 7 mark sits on a soft dark oval on the title, loading and pause screens (ui_* re-shot).
+  Tour 53-60 fps with vsync. Exe rebuilt from 4e80a0e (180 MB, music folder beside it); a
+  900-frame smoke run exits 0 with only the known export-only skeleton_updated disconnect
+  errors (589). PR #1 checked on its own branch (see the note there): radio and encounters work
+  in the editor and in an exported exe.
 ## 25 Nov, last hour before "ready" (PC)
 
 Public repo. Tour 47-61 fps with vsync (map 47), 78 fps uncapped at the start; no script errors.
