@@ -14,13 +14,15 @@ extends CanvasLayer
 
 ## The player chose "start" on the title menu (emitted while the screen is black).
 signal start_pressed
+## The pause screen opened (true) or closed (false).
+signal pause_toggled(on: bool)
 
 enum Screen { LOADING, TITLE, GAME, PAUSED }
 
 const ART_DIR := "res://assets/art/"
 const LOGO := "res://assets/art/logo.png"
 const TITLE_ART := "poster_chairs.jpg"   # the picture behind the title menu: the kiosk at night, under the neon
-const TITLE_LOGO := Rect2(0.03, 0.03, 0.57, 0.5)   # where the big sign hangs on the title screen (share of the screen)
+const TITLE_LOGO := Rect2(0.02, 0.015, 0.4, 0.355)   # where the big sign hangs on the title screen (share of the screen)
 const SLIDE_TIME := 8.0        # seconds each picture stays up
 const CROSS_FADE := 1.4
 const ZOOM := 1.08             # how far a picture drifts in while it is up
@@ -563,6 +565,7 @@ func pause() -> void:
 	_pause_stats.text = str(pause_info.call()) if pause_info.is_valid() else ""
 	_show_screen(Screen.PAUSED)
 	get_tree().paused = true
+	pause_toggled.emit(true)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_first_item(_pause_menu).grab_focus()
 
@@ -572,6 +575,7 @@ func resume() -> void:
 		return
 	_show_screen(Screen.GAME)
 	get_tree().paused = false
+	pause_toggled.emit(false)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
