@@ -48,9 +48,19 @@ Licence texts: `assets/licenses/font-*-OFL.txt`.
 Heebo ships as one variable font; the three weights here are fixed instances
 cut from it with fontTools.
 
+Two more families, also under the SIL Open Font Licence 1.1 and from
+`google/fonts`, are used only to draw the logo and are not shipped in the game
+(`tools/art/fonts`, licence texts `assets/licenses/font-monoton-OFL.txt` and
+`font-pacifico-OFL.txt`):
+
+| Files | Family | Designer | Used for |
+|---|---|---|---|
+| `Monoton-Regular.ttf` | Monoton | Vernon Adams | the neon tubes of "BTA 7" |
+| `Pacifico-Regular.ttf` | Pacifico | Vernon Adams, Jacques Le Bailly, Botjo Nikoltchev, Ani Petrova | "Almosh City" in script |
+
 ## Artwork (assets/art)
 
-The logo (`logo.png`, drawn by `tools/art/make_logo.py`), the icon (`icon.png`) and the drawn posters (`poster_*.jpg`) are original work
+The logo (`logo.png`, a neon shop sign drawn by `tools/art/make_logo.py`), the icon (`icon.png`), the banner (`banner.jpg`, the logo over `poster_chairs.jpg`) and the drawn posters (`poster_*.jpg`) are original work
 made for this game. They are drawn as HTML and SVG and photographed with a
 headless browser; the sources and the one-line build command are in
 `tools/art/`. Files called `keyart_*.jpg`, when present, are stills rendered
