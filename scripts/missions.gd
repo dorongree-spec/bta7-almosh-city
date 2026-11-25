@@ -1,5 +1,7 @@
 ## The two story missions, run as one small state machine.
-##   1. "הבריק לא מחכה": timed delivery in Grandma's Subara with a crispness meter.
+##   1. "סמבוסק מהפינה החמה": Mum wants sambusak from Ha-Pina Ha-Hama on KKL
+##      street. Get there, stand in the queue, and bring it home to Avraham
+##      Avinu 15 before it goes cold (any car, or on foot if you are an optimist).
 ##   2. "הסוברה של אבא": find Dad's towed Subara, take it from the municipal
 ##      lot and get it home with city inspectors on your tail.
 ## Texts come from data/world.json so the jokes stay out of the code.
@@ -11,21 +13,30 @@ signal message(speaker: String, text: String, seconds: float)
 signal banner(text: String)
 signal reward(amount: int)
 
-enum State { M1_OFFER, M1_GET_CAR, M1_DRIVE, M2_OFFER, M2_SULEIMAN, M2_LOT, M2_TAKE, M2_ESCAPE, DONE }
+enum State { M1_GO, M1_QUEUE, M1_HOME, M2_OFFER, M2_SULEIMAN, M2_LOT, M2_TAKE, M2_ESCAPE, DONE }
 
 ## Real-world anchors (lat, lon); each one is snapped to the nearest road.
 const PLACES := {
-	"grandma": Vector2(31.2398, 34.7900),   # Old City
+	"pina_hama": Vector2(31.24056, 34.78802),  # Ha-Pina Ha-Hama, KKL 2 (the map's origin)
+	"home": Vector2(31.26306, 34.79348),       # Avraham Avinu 15, where the game opens
 	"emek_sara": Vector2(31.2330, 34.8150),  # industrial zone
 	"dad": Vector2(31.2440, 34.7760),        # Shchuna Tet
 	"tow_lot": Vector2(31.2360, 34.8030),
 }
 const REACH := 9.0
-const M1_PAY := 400
+const M1_PAY := 250
+const SAMBUSAK_PRICE := 48    # six of them, with egg, no discount for locals
+const QUEUE_TIME := 9.0       # seconds of standing in line
+const M1_ID := "m1_sambusak"
+const QUEUE_LINES := [
+	["מישהו בתור", "אני הייתי פה לפני כולם. הלכתי רק להביא את האוטו."],
+	["המוכר", "עם ביצה? בלי ביצה זה לא סמבוסק, זה בצק עצוב."],
+	["מישהו בתור", "תן לו, תן לו, הוא של אמא שלו. רואים עליו."],
+]
 const M2_PAY := 800
 const TICKET := 500
 
-var state := State.M1_OFFER
+var state := State.M1_GO
 var _player: Player
 var _city: CityBuilder
 var _spawn_car: Callable
@@ -35,7 +46,10 @@ var _target := Vector3.ZERO
 var _car: Car = null
 var _chasers: Array[Car] = []
 var _time_left := 0.0
-var _crisp := 100.0
+var _heat := 100.0             # how hot the sambusak still is, per cent
+var _heat_car: Car = null      # the car whose bumps are cooling it
+var _queue_t := 0.0
+var _queue_said := 0
 var _mom_called := false
 var _caught_t := 0.0
 var _label := ""
@@ -50,7 +64,7 @@ func setup(city: CityBuilder, player: Player, world: Dictionary, car_spawner: Ca
 		_texts[String(m.get("id", ""))] = m
 	_marker = _build_marker()
 	add_child(_marker)
-	_enter(State.M1_OFFER)
+	_enter(State.M1_GO)
 
 
 ## Where the player should be heading, for the radar.
@@ -155,20 +169,22 @@ func _in_mission_car() -> bool:
 func _enter(next: State) -> void:
 	state = next
 	match state:
-		State.M1_OFFER:
-			_aim(_road_spot("grandma").walk, "לך לסבתא מזל בעיר העתיקה")
-		State.M1_GET_CAR:
-			var spot := _road_spot("grandma")
-			_car = _spawn_car.call("subara89", spot.lane, spot.yaw)
-			_aim(spot.lane, "היכנס לסוברה של סבתא (F)")
-			banner.emit(_text("m1_brik", "name", "הבריק לא מחכה"))
-			message.emit("סבתא מזל", _text("m1_brik", "intro", "200 בריקים, 4 דקות. סע."), 6.0)
-		State.M1_DRIVE:
-			_time_left = float(_texts.get("m1_brik", {}).get("time_limit_sec", 240))
-			_crisp = 100.0
+		State.M1_GO:
+			_car = null
+			_aim(_road_spot("pina_hama").walk, "סע לפינה החמה בקק\"ל 2, להביא סמבוסק לאמא")
+		State.M1_QUEUE:
+			_queue_t = 0.0
+			_queue_said = 0
+			banner.emit(_text(M1_ID, "name", "סמבוסק מהפינה החמה"))
+			message.emit("המוכר", _text(M1_ID, "intro", "יש תור. תעמוד."), 5.0)
+			_aim(_target, "תעמוד בתור בפינה החמה (ברגל, בלי לזוז)")
+		State.M1_HOME:
+			_time_left = float(_texts.get(M1_ID, {}).get("time_limit_sec", 300))
+			_heat = 100.0
 			_mom_called = false
-			_car.crashed.connect(_on_brik_crash)
-			_aim(_road_spot("emek_sara").lane, "תביא את הבריקים לעמק שרה")
+			reward.emit(-SAMBUSAK_PRICE)
+			message.emit("המוכר", _text(M1_ID, "bought", "שישה, חמים. רוץ."), 5.0)
+			_aim(_road_spot("home").walk, "תביא את הסמבוסק חם הביתה, לאברהם אבינו 15")
 		State.M2_OFFER:
 			_car = null
 			_aim(_road_spot("dad").walk, "אבא מחכה לך בשכונה ט'")
@@ -199,14 +215,13 @@ func _process(delta: float) -> void:
 	if _player == null or state == State.DONE:
 		return
 	match state:
-		State.M1_OFFER:
+		State.M1_GO:
 			if _reached():
-				_enter(State.M1_GET_CAR)
-		State.M1_GET_CAR:
-			if _in_mission_car():
-				_enter(State.M1_DRIVE)
-		State.M1_DRIVE:
-			_tick_brik(delta)
+				_enter(State.M1_QUEUE)
+		State.M1_QUEUE:
+			_tick_queue(delta)
+		State.M1_HOME:
+			_tick_sambusak(delta)
 		State.M2_OFFER:
 			if _reached():
 				_enter(State.M2_SULEIMAN)
@@ -231,42 +246,77 @@ func _objective_line() -> String:
 	var f := _focus()
 	var dist := roundi(Vector2(f.x - _target.x, f.z - _target.z).length())
 	var line := "%s  ·  %d מ'" % [_label, dist]
-	if state == State.M1_DRIVE:
-		line += "\nזמן: %d:%02d   פריכות: %d%%" % [int(_time_left) / 60, int(_time_left) % 60, roundi(_crisp)]
+	if state == State.M1_QUEUE:
+		line = "%s  ·  עוד %d שניות" % [_label, ceili(QUEUE_TIME - _queue_t)]
+	elif state == State.M1_HOME:
+		line += "\nזמן: %d:%02d   חום הסמבוסק: %d%%" % [int(_time_left) / 60, int(_time_left) % 60, roundi(_heat)]
 	return line
 
 
-# --- mission 1: the brik ---------------------------------------------------------------
+# --- mission 1: the sambusak ---------------------------------------------------------------
 
-func _on_brik_crash(_c: Car, impact: float) -> void:
-	_crisp -= impact * 1.5
+## The queue only moves for somebody who is standing in it: on foot, at the
+## counter, not wandering off. Leave and you are at the back again.
+func _tick_queue(delta: float) -> void:
+	var standing := _player.car == null and _reached() and _player.velocity.length() < 0.5
+	if not standing:
+		if _queue_t > 1.0:
+			message.emit("מישהו בתור", "יצאת מהתור. התור זוכר.", 3.0)
+		_queue_t = 0.0
+		_queue_said = 0
+		return
+	_queue_t += delta
+	var due := int(_queue_t / (QUEUE_TIME / (QUEUE_LINES.size() + 1.0)))
+	if due > _queue_said and _queue_said < QUEUE_LINES.size():
+		var line: Array = QUEUE_LINES[_queue_said]
+		_queue_said += 1
+		message.emit(String(line[0]), String(line[1]), 3.0)
+	if _queue_t >= QUEUE_TIME:
+		_enter(State.M1_HOME)
 
 
-func _tick_brik(delta: float) -> void:
+func _on_sambusak_bump(_c: Car, impact: float) -> void:
+	_heat -= impact * 1.2
+
+
+## Listens for bumps in whatever car the player is driving right now (null: none).
+func _listen_to(car: Car) -> void:
+	if _heat_car == car:
+		return
+	if _heat_car != null and is_instance_valid(_heat_car) and _heat_car.crashed.is_connected(_on_sambusak_bump):
+		_heat_car.crashed.disconnect(_on_sambusak_bump)
+	_heat_car = car
+	if _heat_car != null:
+		_heat_car.crashed.connect(_on_sambusak_bump)
+
+
+func _tick_sambusak(delta: float) -> void:
+	_listen_to(_player.car)
 	_time_left -= delta
-	_crisp -= delta * 0.3
-	var limit := float(_texts.get("m1_brik", {}).get("time_limit_sec", 240))
+	_heat -= delta * 0.22
+	if _player.is_down():
+		_heat -= delta * 6.0   # on the floor, and so is the bag
+	var limit := float(_texts.get(M1_ID, {}).get("time_limit_sec", 300))
 	if not _mom_called and _time_left < limit * 0.5:
 		_mom_called = true
-		message.emit("אמא", "אתה נוהג? אל תענה לי כשאתה נוהג! למה אתה לא עונה?", 5.0)
-	if _car.wrecked or _time_left <= 0 or _crisp <= 0:
-		_finish_brik(false)
-	elif _reached() and _in_mission_car():
-		_finish_brik(true)
+		message.emit("אמא", "איפה אתה? האורחים כבר פה. אל תענה לי כשאתה נוהג! למה אתה לא עונה?", 5.0)
+	if _time_left <= 0 or _heat <= 0:
+		_finish_sambusak(false)
+	elif _reached():
+		_finish_sambusak(true)
 
 
-func _finish_brik(won: bool) -> void:
-	if _car.crashed.is_connected(_on_brik_crash):
-		_car.crashed.disconnect(_on_brik_crash)
+func _finish_sambusak(won: bool) -> void:
+	_listen_to(null)
 	if won:
 		banner.emit("המשימה הושלמה  +₪%d" % M1_PAY)
-		message.emit("סבתא מזל", _text("m1_brik", "success", "כפרה עליך."), 6.0)
+		message.emit("אמא", _text(M1_ID, "success", "חם. יפה. למה רק שישה?"), 6.0)
 		reward.emit(M1_PAY)
 		_enter(State.M2_OFFER)
 	else:
 		banner.emit("המשימה נכשלה")
-		message.emit("סבתא מזל", _text("m1_brik", "fail", "בושה למשפחה."), 6.0)
-		_enter(State.M1_OFFER)
+		message.emit("אמא", _text(M1_ID, "fail", "סמבוסק קר. כמו הלב שלך."), 6.0)
+		_enter(State.M1_GO)
 
 
 # --- mission 2: inspectors -----------------------------------------------------------------
