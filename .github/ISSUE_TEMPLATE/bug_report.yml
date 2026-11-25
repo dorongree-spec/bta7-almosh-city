@@ -1,0 +1,32 @@
+name: Bug report
+description: Something crashes, looks broken or behaves wrong.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to make it happen again
+      placeholder: |
+        1. Start the game
+        2. Drive to the Old City
+        3. Honk at a grandmother
+  - type: textarea
+    id: log
+    attributes:
+      label: Output or error log
+      description: From Godot's Output panel, or the terminal. A screenshot helps too.
+      render: text
+  - type: input
+    id: system
+    attributes:
+      label: System
+      placeholder: Windows 11, Godot 4.3, RX 6750 XT
+    validations:
+      required: true

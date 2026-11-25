@@ -1,0 +1,21 @@
+name: Feature or improvement
+description: A new mechanic, better graphics, performance, tools.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would be better, and why
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: How it could work
+      description: Which scripts or data files it touches, if you know.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Help
+      options:
+        - label: I'd like to work on this myself.

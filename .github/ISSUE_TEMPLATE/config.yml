@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: How to add content (people, radio, jokes)
+    url: https://github.com/dorongree-spec/bta7-almosh-city/blob/main/CONTRIBUTING.md
+    about: Most changes don't need an issue first. The guide shows how to make them yourself.

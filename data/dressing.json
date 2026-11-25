@@ -1,0 +1,320 @@
+{
+ "_readme": "Where things go between the buildings; made by tools/dress_city.py, drawn by scripts/city_dressing.gd. The numbers are in dressing.bin as 32-bit floats. For each layer, 'offset' is the index of its first float. Layers with a 'stride' hold 'count' items of that many floats each; 'fields' names them. Layers with 'rings' hold that many outlines one after the other, each as its number of points followed by x, z pairs. Metres, x east, z south; yaw 0 faces south and grows towards the east.",
+ "layers": {
+  "wall_low": {
+   "offset": 0,
+   "count": 29736,
+   "stride": 4,
+   "fields": [
+    "x0",
+    "z0",
+    "x1",
+    "z1"
+   ]
+  },
+  "wall_stone": {
+   "offset": 118944,
+   "count": 16155,
+   "stride": 4,
+   "fields": [
+    "x0",
+    "z0",
+    "x1",
+    "z1"
+   ]
+  },
+  "wall_high": {
+   "offset": 183564,
+   "count": 153,
+   "stride": 4,
+   "fields": [
+    "x0",
+    "z0",
+    "x1",
+    "z1"
+   ]
+  },
+  "bush": {
+   "offset": 184176,
+   "count": 100673,
+   "stride": 4,
+   "fields": [
+    "x",
+    "z",
+    "scale",
+    "yaw"
+   ]
+  },
+  "tree": {
+   "offset": 586868,
+   "count": 15509,
+   "stride": 4,
+   "fields": [
+    "x",
+    "z",
+    "scale",
+    "yaw"
+   ]
+  },
+  "rock": {
+   "offset": 648904,
+   "count": 5594,
+   "stride": 4,
+   "fields": [
+    "x",
+    "z",
+    "scale",
+    "yaw"
+   ]
+  },
+  "bin": {
+   "offset": 671280,
+   "count": 2703,
+   "stride": 3,
+   "fields": [
+    "x",
+    "z",
+    "yaw"
+   ]
+  },
+  "bus_stop": {
+   "offset": 679389,
+   "count": 90,
+   "stride": 3,
+   "fields": [
+    "x",
+    "z",
+    "yaw"
+   ]
+  },
+  "bench": {
+   "offset": 679659,
+   "count": 372,
+   "stride": 3,
+   "fields": [
+    "x",
+    "z",
+    "yaw"
+   ]
+  },
+  "shelter": {
+   "offset": 680775,
+   "count": 100,
+   "stride": 3,
+   "fields": [
+    "x",
+    "z",
+    "yaw"
+   ]
+  },
+  "canopy": {
+   "offset": 681075,
+   "count": 691,
+   "stride": 4,
+   "fields": [
+    "x0",
+    "z0",
+    "x1",
+    "z1"
+   ]
+  },
+  "tile_roof": {
+   "offset": 683839,
+   "count": 2026,
+   "stride": 6,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw",
+    "length",
+    "width"
+   ]
+  },
+  "solar": {
+   "offset": 695995,
+   "count": 74655,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "stairhead": {
+   "offset": 994615,
+   "count": 8045,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "ac": {
+   "offset": 1026795,
+   "count": 3338,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "chiller": {
+   "offset": 1040147,
+   "count": 244,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "dish": {
+   "offset": 1041123,
+   "count": 12616,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "aerial": {
+   "offset": 1091587,
+   "count": 2637,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "vent": {
+   "offset": 1102135,
+   "count": 36,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "stair_screen": {
+   "offset": 1102279,
+   "count": 20282,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "stair_entry": {
+   "offset": 1183407,
+   "count": 8954,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "wall_ac": {
+   "offset": 1219223,
+   "count": 74953,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "laundry": {
+   "offset": 1519035,
+   "count": 23540,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "balcony_open": {
+   "offset": 1613195,
+   "count": 9046,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "balcony_shutter": {
+   "offset": 1649379,
+   "count": 18113,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "balcony_glass": {
+   "offset": 1721831,
+   "count": 13551,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "balcony_built": {
+   "offset": 1776035,
+   "count": 9060,
+   "stride": 4,
+   "fields": [
+    "x",
+    "y",
+    "z",
+    "yaw"
+   ]
+  },
+  "yard_garden": {
+   "offset": 1812275,
+   "rings": 1101,
+   "length": 47355
+  },
+  "yard_paved": {
+   "offset": 1859630,
+   "rings": 718,
+   "length": 26516
+  },
+  "yard_parking": {
+   "offset": 1886146,
+   "rings": 513,
+   "length": 21231
+  },
+  "yard_works": {
+   "offset": 1907377,
+   "rings": 14,
+   "length": 272
+  }
+ }
+}

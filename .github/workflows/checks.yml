@@ -1,0 +1,40 @@
+# Fast checks that need no Godot binary: content files, GDScript syntax and
+# licence coverage. They run on every pull request and every push to main.
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  content:
+    name: Content files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 tools/validate_content.py
+
+  gdscript:
+    name: GDScript syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "gdtoolkit==4.*"
+      - run: gdparse scripts/*.gd scripts/ui/*.gd tools/*.gd
+
+  licences:
+    name: Licences (REUSE)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: fsfe/reuse-action@v5

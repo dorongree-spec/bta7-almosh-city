@@ -1,0 +1,32 @@
+name: Content idea
+description: A person who should walk up to the player, a joke, a radio station, a place.
+labels: [content]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are welcome here, and you can also add them yourself: most content is plain JSON,
+        see [CONTRIBUTING.md](https://github.com/dorongree-spec/bta7-almosh-city/blob/main/CONTRIBUTING.md).
+        Please keep to the content rules: everyone gets it equally, no slurs, invented people only,
+        nothing from commercial games or brands.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options: [Encounter (a person), Joke or line, Radio station or music, Place or landmark, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: Who, where, what they say, what happens on yes and on no. Hebrew is fine.
+    validations:
+      required: true
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: Content rules
+      options:
+        - label: It is invented, has no slurs, and takes nothing from a commercial game or brand.
+          required: true

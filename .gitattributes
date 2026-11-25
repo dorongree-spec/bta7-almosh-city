@@ -1,0 +1,10 @@
+# Normalise line endings so Windows and Linux contributors produce the same diffs.
+* text=auto eol=lf
+
+# Binary assets: never touch their bytes, never try to diff them.
+*.png binary
+*.jpg binary
+*.glb binary
+*.bin binary
+*.ogg binary
+*.ttf binary
