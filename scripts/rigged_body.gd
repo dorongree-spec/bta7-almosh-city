@@ -284,7 +284,7 @@ func _build(look: Dictionary) -> void:
 	# A natural build on the athletic base model, relaxed hands (PC).
 	var shape := BodyShape.new()
 	_shape = shape
-	shape.slim = 0.45 if look.get("long_hair", false) else 0.65
+	shape.slim = 0.45 if look.get("long_hair", false) else 0.9
 	shape.belly = float(look.get("belly", 0.0))
 	shape.stoop = 0.2 if look.get("old", false) else 0.0
 	shape.pose = int(look.get("pose", 0))
@@ -444,7 +444,7 @@ func _real_hair(file: String, hair: Color) -> void:
 ## layer per body and cut, built once, cached on disk and shared. Long dresses
 ## and robes also get a skirt that hangs from the hips over the legs; feet get
 ## a shoe layer the same way.
-const LAYER_VERSION := 9
+const LAYER_VERSION := 10
 static var _shells := {}   # "sex|cut" -> ArrayMesh
 static var _stripped := {} # "sex|cut" -> body mesh without the triangles the layer hides
 
@@ -478,7 +478,7 @@ static func _lift(cut: String, p: Vector3, n: Vector3, c: Color) -> float:
 	var side := absf(p.x)
 	match cut:
 		"fitted":
-			return 0.015
+			return 0.02
 		"loose":
 			return 0.03 + (0.015 if side < 0.3 and p.y > 0.95 and p.y < 1.25 else 0.0)
 		"shoes":
@@ -1264,6 +1264,15 @@ func _play(clip: String, blend := 0.2, speed := 1.0) -> void:
 	_player.speed_scale = speed
 
 
+## What to do when standing still; takes effect at once if standing still now.
+func set_idle(clip: String) -> void:
+	idle_clip = clip
+	if _shape:
+		_shape.standing = clip.begins_with("Idle")
+	if _player != null and (_current == "" or _current.begins_with("Idle") or _current.begins_with("Sitting") or _current.begins_with("Dance") or _current.begins_with("Driving")):
+		_play(clip, 0.2)
+
+
 ## speed in m/s picks and paces the gait.
 func animate(delta: float, speed: float) -> void:
 	if _mid and _player != null and not _far:
@@ -1279,7 +1288,9 @@ func animate(delta: float, speed: float) -> void:
 		_busy_t -= delta
 		return
 	if _shape:
-		_shape.standing = speed < 0.25
+		# The standing pose is for standing about only: sitting, driving or
+		# dancing clips keep their own legs and arms.
+		_shape.standing = speed < 0.25 and idle_clip.begins_with("Idle")
 	if speed < 0.25:
 		_play(idle_clip, 0.25)
 	elif speed < 3.0:

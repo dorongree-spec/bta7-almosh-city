@@ -284,7 +284,7 @@ func animate(delta: float, speed: float) -> void:
 ## the rigged body has more than one).
 func set_idle(clip: String) -> void:
 	if _rig != null:
-		_rig.idle_clip = clip
+		_rig.set_idle(clip)
 
 
 func swing() -> void:
