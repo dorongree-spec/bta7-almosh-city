@@ -293,7 +293,7 @@ func _listen_to(car: Car) -> void:
 func _tick_sambusak(delta: float) -> void:
 	_listen_to(_player.car)
 	_time_left -= delta
-	_heat -= delta * 0.22
+	_heat -= delta * 0.18   # 360 s of driving cools it by about two thirds
 	if _player.is_down():
 		_heat -= delta * 6.0   # on the floor, and so is the bag
 	var limit := float(_texts.get(M1_ID, {}).get("time_limit_sec", 300))

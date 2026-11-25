@@ -152,7 +152,7 @@
       "start": "dalet",
       "end": "dalet",
       "pickup": "הפינה החמה, קק\"ל 2",
-      "time_limit_sec": 300,
+      "time_limit_sec": 360,
       "special_meter": "חום הסמבוסק: יורד עם הזמן, בכל התנגשות וכשמפילים אותך. באפס המשימה נכשלת.",
       "obstacles": [
         "תור שלא זז",

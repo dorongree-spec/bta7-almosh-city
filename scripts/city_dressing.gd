@@ -565,6 +565,10 @@ func _stamp(layer_name: String, mesh: Mesh, place: Callable, seen_from: float, s
 	var tiles := {}   # Vector2i -> Array of Transform3D
 	for i in count:
 		var xform: Transform3D = place.call(offset + i * stride)
+		# Dressing worked out for an outline that a landmark model replaces
+		# (shop canopies, balconies) would float round the model: leave it out.
+		if Landmarks.covers(xform.origin):
+			continue
 		var tile := Vector2i(floori(xform.origin.x / tile_size), floori(xform.origin.z / tile_size))
 		if not tiles.has(tile):
 			tiles[tile] = []

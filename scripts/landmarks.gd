@@ -80,6 +80,13 @@ static func replaces(building: Dictionary) -> bool:
 	return false
 
 
+## True if `point` is on the ground of the bakery row or within 3 m of its
+## walls, where dressing made for the outlines it replaced would float.
+static func covers(point: Vector3) -> bool:
+	var local := pina_hama_place().affine_inverse() * point
+	return absf(local.x) < PINA_HAMA_SIZE.x * 0.5 + 3.0 and absf(local.z) < PINA_HAMA_SIZE.y * 0.5 + 3.0
+
+
 ## Where the bakery row stands, for anything that needs a spot beside it.
 static func pina_hama_place() -> Transform3D:
 	return Transform3D(Basis(Vector3.UP, PINA_HAMA[2]), Vector3(PINA_HAMA[0], 0.0, PINA_HAMA[1]))
@@ -503,7 +510,11 @@ func _pina_hama(kit: MeshKit, blocks: Array[AABB], length: float, depth: float) 
 	blocks.append(AABB(tree + Vector3(-0.3, 0.0, -0.3), Vector3(0.6, 3.4, 0.6)))
 	kit.ball(leaves, 4.6, tree + Vector3(0.0, 4.8, 0.0), 0.4, 12)
 	kit.ball(leaves, 3.0, tree + Vector3(2.2, 5.3, -1.0), 0.45, 10)
-	kit.ball(flowers, 3.4, tree + Vector3(-0.6, 5.5, 0.4), 0.3, 10)
+	# Flowers in clumps over the crown, not one patch.
+	for clump in 7:
+		var turn := clump * 2.4
+		var r := 1.2 + (clump % 3) * 1.1
+		kit.ball(flowers, 1.0 + (clump % 2) * 0.4, tree + Vector3(cos(turn) * r, 6.1 + (clump % 2) * 0.3, sin(turn) * r * 0.8), 0.45, 8)
 
 	# ...and a seating enclosure: a black frame with clear plastic sheets.
 	var glass := CityMaterials.glass()
