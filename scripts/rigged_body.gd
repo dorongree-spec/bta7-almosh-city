@@ -240,6 +240,8 @@ func _build(look: Dictionary) -> void:
 		if found != "":
 			_player.get_animation(found).loop_mode = Animation.LOOP_LINEAR
 
+	if not look.has("shorts"):
+		look["shorts"] = String(look.get("outfit", "")) == "" and not look.get("long_hair", false) and randf() < 0.4
 	var material := ShaderMaterial.new()
 	material.shader = _clothes_shader()
 	var shirt: Color = look.get("shirt", Color.WHITE)
@@ -275,7 +277,7 @@ func _build(look: Dictionary) -> void:
 			mi.material_override = material
 		_swap_in_real_body(look, material)
 	# Half the men in Beer Sheva are in shorts from April to November.
-	if _real_body and outfit == "" and not look.get("long_hair", false) and randf() < 0.4:
+	if _real_body and look.get("shorts", false):
 		for node in _model.find_children("*", "MeshInstance3D", true, false):
 			var m := (node as MeshInstance3D).material_override
 			if m is ShaderMaterial:
@@ -284,7 +286,7 @@ func _build(look: Dictionary) -> void:
 	# A natural build on the athletic base model, relaxed hands (PC).
 	var shape := BodyShape.new()
 	_shape = shape
-	shape.slim = 0.45 if look.get("long_hair", false) else 0.65
+	shape.slim = 0.45 if look.get("long_hair", false) else 0.9
 	shape.belly = float(look.get("belly", 0.0))
 	shape.stoop = 0.2 if look.get("old", false) else 0.0
 	shape.pose = int(look.get("pose", 0))
@@ -444,7 +446,7 @@ func _real_hair(file: String, hair: Color) -> void:
 ## layer per body and cut, built once, cached on disk and shared. Long dresses
 ## and robes also get a skirt that hangs from the hips over the legs; feet get
 ## a shoe layer the same way.
-const LAYER_VERSION := 9
+const LAYER_VERSION := 12
 static var _shells := {}   # "sex|cut" -> ArrayMesh
 static var _stripped := {} # "sex|cut" -> body mesh without the triangles the layer hides
 
@@ -465,6 +467,9 @@ static func _covers(cut: String, c: Color, p: Vector3, n: Vector3) -> bool:
 			if is_head:
 				return not _face(p, n)
 			return true
+	if cut == "shorts":
+		# Shorts: the trouser layer stops above the knee and the real legs show.
+		return c.r > 0.5 or (c.g > 0.5 and p.y > 0.53)
 	return c.r > 0.5 or c.g > 0.5
 
 
@@ -478,13 +483,16 @@ static func _lift(cut: String, p: Vector3, n: Vector3, c: Color) -> float:
 	var side := absf(p.x)
 	match cut:
 		"fitted":
-			return 0.015
+			return 0.02
+		"shorts":
+			return 0.02 + (0.014 if p.y < 0.92 else 0.0)   # wide legs, as shorts are
 		"loose":
 			return 0.03 + (0.015 if side < 0.3 and p.y > 0.95 and p.y < 1.25 else 0.0)
 		"shoes":
 			return 0.015
-	# Robes: loose; below the chest the skirt cone takes over.
-	var lift := 0.028
+	# Robes: loose; below the chest the skirt cone takes over. Sleeves closer,
+	# or the galabiya reads as a gown with puffed sleeves.
+	var lift := 0.028 if side < 0.24 else 0.016
 	if cut == "robe_head" and c.a > 0.4 and c.a < 0.6:
 		# The scarf: snug round the face, fuller over the crown and the back of the head.
 		lift = 0.016 + 0.035 * maxf(0.0, -n.z) + 0.02 * maxf(0.0, n.y)
@@ -496,9 +504,11 @@ static func _lift(cut: String, p: Vector3, n: Vector3, c: Color) -> float:
 static func _snap(cut: String, p: Vector3) -> Vector3:
 	var side := absf(p.x)
 	var s := signf(p.x)
+	if cut == "shorts" and absf(p.y - 0.55) < 0.06:
+		return Vector3(p.x, 0.55, p.z)
 	if absf(p.y - 0.14) < 0.08:
 		return Vector3(p.x, 0.14, p.z)
-	if cut != "robe_head" and side < 0.17 and p.y > 1.4 and p.y < 1.58:
+	if cut != "robe_head" and side < 0.22 and p.y > 1.4 and p.y < 1.6:
 		return Vector3(p.x, _neckline(side), p.z)
 	if cut.begins_with("robe"):
 		if absf(side - 0.68) < 0.06 and p.y > 1.2:
@@ -600,7 +610,7 @@ static func _build_layer(src: ArrayMesh, cut: String) -> ArrayMesh:
 		cur[g] = pos[g] + nrm[g] * lift[g]
 		if open[g] == 1:
 			cur[g] = _snap(cut, cur[g])
-	var rounds: int = {"fitted": 40, "loose": 34, "robe": 44, "robe_head": 44, "shoes": 40}[cut]
+	var rounds: int = {"fitted": 40, "shorts": 40, "loose": 34, "robe": 44, "robe_head": 44, "shoes": 40}[cut]
 	var max_slide := 0.03 if cut == "shoes" else 0.015
 	for it in rounds:
 		var nxt := cur.duplicate()
@@ -693,7 +703,7 @@ static func _strip(src: ArrayMesh, sex: String, cut: String) -> ArrayMesh:
 
 func _add_garments(body: MeshInstance3D, sex: String, material: ShaderMaterial, look: Dictionary) -> void:
 	var outfit := String(look.get("outfit", ""))
-	var cut := "robe_head" if outfit == "robe" and look.get("long_hair", false) else ("robe" if outfit == "robe" else ("loose" if outfit.begins_with("tracksuit") else "fitted"))
+	var cut := "robe_head" if outfit == "robe" and look.get("long_hair", false) else ("robe" if outfit == "robe" else ("loose" if outfit.begins_with("tracksuit") else ("shorts" if look.get("shorts", false) else "fitted")))
 	var source := body.mesh as ArrayMesh
 	var shell := _layer_instance(body, _layer(source, sex, cut))
 	shell.name = "Garment"
@@ -1038,7 +1048,7 @@ static func _region(v: Vector3) -> Color:
 		return Color(0, 0, 0)  # shoes (was 0.12: some feet came out bare)
 	if v.y < 0.92 and side < 0.32:
 		return Color(0, 1, 0)
-	if side < 0.15 and v.y > _neckline(side):
+	if side < 0.2 and v.y > _neckline(side):
 		return Color(0, 0, 1, 0.5)  # head and neck (alpha marks it for the robe); a crew neck
 	if side > 0.68:
 		return Color(0, 0, 1, 0.25)  # hands
@@ -1264,6 +1274,15 @@ func _play(clip: String, blend := 0.2, speed := 1.0) -> void:
 	_player.speed_scale = speed
 
 
+## What to do when standing still; takes effect at once if standing still now.
+func set_idle(clip: String) -> void:
+	idle_clip = clip
+	if _shape:
+		_shape.standing = clip.begins_with("Idle")
+	if _player != null and (_current == "" or _current.begins_with("Idle") or _current.begins_with("Sitting") or _current.begins_with("Dance") or _current.begins_with("Driving")):
+		_play(clip, 0.2)
+
+
 ## speed in m/s picks and paces the gait.
 func animate(delta: float, speed: float) -> void:
 	if _mid and _player != null and not _far:
@@ -1279,7 +1298,9 @@ func animate(delta: float, speed: float) -> void:
 		_busy_t -= delta
 		return
 	if _shape:
-		_shape.standing = speed < 0.25
+		# The standing pose is for standing about only: sitting, driving or
+		# dancing clips keep their own legs and arms.
+		_shape.standing = speed < 0.25 and idle_clip.begins_with("Idle")
 	if speed < 0.25:
 		_play(idle_clip, 0.25)
 	elif speed < 3.0:

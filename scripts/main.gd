@@ -86,6 +86,7 @@ func _ready() -> void:
 	front = FrontEnd.new()
 	add_child(front)
 	front.start_pressed.connect(_start)
+	front.pause_toggled.connect(hud.set_paused)
 	front.pause_info = _pause_summary
 	audio = GameAudio.new()
 	add_child(audio)
@@ -902,6 +903,8 @@ func _toggle_car() -> void:
 		# The owner (or his whole crew) may want a word about that.
 		encounters.notify("touches_vehicle", _crowd_of(car), car.global_position - car.global_transform.basis.x * 2.5)
 	car.driver = Car.Driver.PLAYER
+	# Far parked and far traffic cars are kept out of physics (Traffic): back in.
+	car.process_mode = Node.PROCESS_MODE_INHERIT
 	car.crashed.connect(_on_player_crash)
 	player.car = car
 	_last_car = car

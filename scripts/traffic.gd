@@ -258,6 +258,7 @@ func _recycle_parked(pp: Vector3) -> void:
 	for car in _parked.duplicate():
 		if car.driver != Car.Driver.NONE or car.wrecked:
 			_parked.erase(car)
+			car.process_mode = Node.PROCESS_MODE_INHERIT
 		elif not car.visible or car.global_position.distance_to(pp) > DESPAWN:
 			_park(car)
 		else:

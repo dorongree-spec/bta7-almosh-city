@@ -61,7 +61,7 @@ func _find(skeleton: Skeleton3D) -> void:
 		var aims := {}
 		match pose:
 			1:
-				aims = {"l": [Vector3(0.16, -1.0, 0.02), Vector3(-0.2, -0.72, 0.62)], "r": [Vector3(0.16, -1.0, 0.02), Vector3(-0.2, -0.72, 0.62)]}
+				aims = {"l": [Vector3(0.22, -1.0, -0.02), Vector3(-0.02, -0.82, 0.55)], "r": [Vector3(0.22, -1.0, -0.02), Vector3(-0.02, -0.82, 0.55)]}
 			2:
 				aims = {"l": [Vector3(0.2, -0.8, 0.55), Vector3(-0.92, 0.14, 0.34)], "r": [Vector3(0.2, -0.8, 0.55), Vector3(-0.92, 0.02, 0.38)]}
 			3:

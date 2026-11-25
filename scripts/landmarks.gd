@@ -506,15 +506,27 @@ func _pina_hama(kit: MeshKit, blocks: Array[AABB], length: float, depth: float) 
 	var leaves := CityMaterials.color(Color(0.2, 0.42, 0.16), 0.9)
 	var flowers := CityMaterials.color(Color(0.85, 0.22, 0.1), 0.85)
 	var tree := Vector3(-half - 3.5, 0.0, front + 1.6)
-	kit.cylinder(bark, 0.3, 3.4, tree + Vector3(0.0, 1.7, 0.0), Basis.IDENTITY, 0.22)
+	# A poinciana: a short trunk that forks low into three limbs, a wide flat
+	# umbrella crown of overlapping layers, and red-orange flowers on top.
+	kit.cylinder(bark, 0.28, 1.7, tree + Vector3(0.0, 0.85, 0.0), Basis.IDENTITY, 0.22, 8)
 	blocks.append(AABB(tree + Vector3(-0.3, 0.0, -0.3), Vector3(0.6, 3.4, 0.6)))
-	kit.ball(leaves, 4.6, tree + Vector3(0.0, 4.8, 0.0), 0.4, 12)
-	kit.ball(leaves, 3.0, tree + Vector3(2.2, 5.3, -1.0), 0.45, 10)
-	# Flowers in clumps over the crown, not one patch.
-	for clump in 7:
-		var turn := clump * 2.4
-		var r := 1.2 + (clump % 3) * 1.1
-		kit.ball(flowers, 1.0 + (clump % 2) * 0.4, tree + Vector3(cos(turn) * r, 6.1 + (clump % 2) * 0.3, sin(turn) * r * 0.8), 0.45, 8)
+	for limb in 3:
+		var turn := limb * TAU / 3.0 + 0.4
+		var out := Vector3(cos(turn), 0.0, sin(turn))
+		var lean := Basis(out.cross(Vector3.UP).normalized(), -0.55)
+		kit.cylinder(bark, 0.18, 2.2, tree + Vector3(0.0, 1.6, 0.0) + lean * Vector3(0.0, 1.1, 0.0), lean, 0.1, 6)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4242
+	kit.ball(leaves, 4.8, tree + Vector3(0.0, 3.9, 0.0), 0.16, 14)
+	for layer in 7:
+		var turn := layer * TAU / 7.0
+		var r := rng.randf_range(1.6, 3.0)
+		kit.ball(leaves, rng.randf_range(2.0, 2.8), tree + Vector3(cos(turn) * r, rng.randf_range(4.1, 4.6), sin(turn) * r), 0.22, 10)
+	for clump in 34:
+		var turn := rng.randf() * TAU
+		var r := sqrt(rng.randf()) * 4.3
+		var top := 5.05 - r * 0.1   # the crown dips a little towards its rim
+		kit.ball(flowers, rng.randf_range(0.34, 0.55), tree + Vector3(cos(turn) * r, top + rng.randf_range(-0.05, 0.15), sin(turn) * r), 0.55, 6)
 
 	# ...and a seating enclosure: a black frame with clear plastic sheets.
 	var glass := CityMaterials.glass()
