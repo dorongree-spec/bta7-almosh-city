@@ -86,6 +86,7 @@ func _ready() -> void:
 	front = FrontEnd.new()
 	add_child(front)
 	front.start_pressed.connect(_start)
+	front.pause_toggled.connect(hud.set_paused)
 	front.pause_info = _pause_summary
 	audio = GameAudio.new()
 	add_child(audio)

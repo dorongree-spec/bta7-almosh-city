@@ -402,3 +402,10 @@ func _process(delta: float) -> void:
 	_hint_t -= delta
 	var wanted := 1.0 if _hint_t > 0.0 else HINT_REST
 	_hints.modulate.a = move_toward(_hints.modulate.a, wanted, delta * 1.5)
+
+
+## Pause screen up: the encounter question waits out of sight, and comes
+## back as it was on resume (its own visibility is left alone).
+func set_paused(on: bool) -> void:
+	if _ask_card != null:
+		_ask_card.modulate.a = 0.0 if on else 1.0
