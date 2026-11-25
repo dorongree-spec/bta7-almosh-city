@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/art/logo.png" alt="BTA 7 Almosh City" width="520"></p>
+<p align="center"><img src="assets/art/banner.jpg" alt="BTA 7 Almosh City" width="820"></p>
 
 # BTA 7 Almosh City
 

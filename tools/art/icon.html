@@ -1,22 +1,13 @@
 <!doctype html><html><head><meta charset="utf-8"><style>
-@font-face{font-family:K;src:url('../../assets/fonts/Karantina-Bold.ttf')}
-html,body{margin:0;background:transparent}
-svg{display:block}
-</style></head><body>
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 560 560">
-<defs>
-  <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#FFF6C9"/><stop offset=".4" stop-color="#FFD35A"/><stop offset=".68" stop-color="#FF8A3A"/><stop offset="1" stop-color="#E23B6E"/>
-  </linearGradient>
-</defs>
-<circle cx="280" cy="280" r="250" fill="#1F5FC4" stroke="#12061f" stroke-width="26"/>
-<circle cx="280" cy="280" r="228" fill="none" stroke="#fff" stroke-width="10"/>
-<path d="M456.7 344.3 A188 188 0 0 0 379.6 120.6" fill="none" stroke="#fff" stroke-width="30"/>
-<path d="M341.5 96.7 L396.3 93.9 L362.9 147.3 Z" fill="#fff"/>
-<path d="M136.0 400.8 A188 188 0 0 0 368.3 446.0" fill="none" stroke="#fff" stroke-width="30"/>
-<path d="M408.0 424.9 L383.0 473.8 L353.5 418.2 Z" fill="#fff"/>
-<path d="M247.4 94.9 A188 188 0 0 0 92.1 273.4" fill="none" stroke="#fff" stroke-width="30"/>
-<path d="M90.5 318.4 L60.6 272.3 L123.6 274.5 Z" fill="#fff"/>
-<text x="286" y="418" text-anchor="middle" font-family="K" font-size="400"
-      fill="url(#fill)" stroke="#12061f" stroke-width="26" stroke-linejoin="round" paint-order="stroke">7</text>
-</svg></body></html>
+
+@font-face{font-family:Monoton;src:url('fonts/Monoton-Regular.ttf')}
+@font-face{font-family:Pacifico;src:url('fonts/Pacifico-Regular.ttf')}
+@font-face{font-family:Secular;src:url('../../assets/fonts/SecularOne-Regular.ttf')}
+
+html,body{margin:0;width:256px;height:256px;background:transparent;overflow:hidden}
+.tile{position:absolute;inset:6px;border-radius:44px;background:radial-gradient(circle at 50% 40%,#2a0f4a,#0d0420 75%);
+  box-shadow:inset 0 0 0 4px #ff3fa4, inset 0 0 26px #ff2e7e}
+.b7{position:absolute;left:0;right:0;top:50px;text-align:center;font-family:Monoton;font-size:128px;line-height:1;color:#fff;
+  letter-spacing:2px;text-shadow:0 0 3px #fff,0 0 9px #ff3fa4,0 0 22px #ff3fa4,0 0 50px #ff2e7e}
+.b7 i{font-style:normal;color:#fffbe0;text-shadow:0 0 3px #fff,0 0 9px #ffc93c,0 0 22px #ffc93c,0 0 50px #ff7a1a}
+</style></head><body><div class="tile"></div><div class="b7">B<i>7</i></div></body></html>

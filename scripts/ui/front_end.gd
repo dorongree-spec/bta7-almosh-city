@@ -19,6 +19,8 @@ enum Screen { LOADING, TITLE, GAME, PAUSED }
 
 const ART_DIR := "res://assets/art/"
 const LOGO := "res://assets/art/logo.png"
+const TITLE_ART := "poster_chairs.jpg"   # the picture behind the title menu: the kiosk at night, under the neon
+const TITLE_LOGO := Rect2(0.03, 0.03, 0.57, 0.5)   # where the big sign hangs on the title screen (share of the screen)
 const SLIDE_TIME := 8.0        # seconds each picture stays up
 const CROSS_FADE := 1.4
 const ZOOM := 1.08             # how far a picture drifts in while it is up
@@ -193,6 +195,17 @@ func _shade(from: Vector2, to: Vector2, strength: float) -> TextureRect:
 	return rect
 
 
+## The neon sign alone, with nothing behind it (for a dark picture).
+func _sign() -> TextureRect:
+	var mark := TextureRect.new()
+	if ResourceLoader.exists(LOGO):
+		mark.texture = load(LOGO) as Texture2D
+	mark.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	mark.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	mark.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return mark
+
+
 ## The BTA 7 mark on a soft dark oval, so its thin white chair (far left) and
 ## the strap line read over a bright sky as well as over the dim pause screen.
 func _logo(height: float) -> Control:
@@ -272,7 +285,10 @@ func _build_title() -> void:
 	column.add_theme_constant_override("separation", 6)
 	UiStyle.pin(column, Rect2(1, 0, 0, 1), -SIDE - COLUMN, SIDE, -SIDE, -SIDE)
 	_title.add_child(column)
-	column.add_child(_logo(330.0))
+	# The name hangs big over the kiosk, top left; the menu keeps the right-hand column.
+	var neon := _sign()
+	UiStyle.pin(neon, Rect2(TITLE_LOGO.position.x, TITLE_LOGO.position.y, TITLE_LOGO.end.x, TITLE_LOGO.end.y), 0, 0, 0, 0)
+	_title.add_child(neon)
 	_menu = VBoxContainer.new()
 	_menu.add_theme_constant_override("separation", 0)
 	column.add_child(_menu)
@@ -452,6 +468,8 @@ func _show_screen(which: Screen) -> void:
 	_tip.visible = art_up
 	_loading.visible = which == Screen.LOADING
 	_title.visible = which == Screen.TITLE
+	if which == Screen.TITLE:
+		_hold_title_art()
 	_pause.visible = which == Screen.PAUSED
 
 
@@ -470,7 +488,21 @@ func _process(delta: float) -> void:
 		return
 	_slide_t += delta
 	if _slide_t >= SLIDE_TIME:
+		if screen == Screen.TITLE:
+			_next_art -= 1   # the same picture again: only the tip changes
 		_next_slide(false)
+
+
+## The title menu always sits on the same picture, the one its sign belongs to.
+func _hold_title_art() -> void:
+	if not ResourceLoader.exists(ART_DIR + TITLE_ART):
+		return
+	var picture := load(ART_DIR + TITLE_ART) as Texture2D
+	var at := _art.find(picture)
+	if at < 0:
+		return
+	_next_art = at
+	_next_slide(true)
 
 
 ## Brings the next picture (and the next tip) up over the current one.
