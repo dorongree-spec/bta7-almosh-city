@@ -38,6 +38,17 @@ const STREET_SET := [
 	[541.0, -2611.0, 0.0, "pylon"],             # the steel pylon at the corner of David HaMelech
 ]
 
+## Ha-Pina Ha-Hama, the bakery on the corner of KKL street and Derekh
+## Hebron (docs/REFERENCE_PINA_HAMA.md). The map has the corner as two plain
+## two-storey outlines; both are left out and one model of the old stone row
+## stands on their ground. Its front (+z) faces KKL street and its +x end
+## faces Derekh Hebron.
+const PINA_HAMA := [428.8, 328.0, -0.71]            # x, z, yaw
+const PINA_HAMA_SIZE := Vector2(20.0, 17.7)         # along KKL street, and back from it
+const PINA_HAMA_WINDOW := 7.6                       # where the service window is along the front
+## A point inside each plain outline that the row replaces.
+const CLEARED := [Vector2(433.0, 331.7), Vector2(425.0, 324.8)]
+
 const STOREY := 3.0
 
 var _stone: Material
@@ -47,13 +58,36 @@ var _tiles: Material
 var _dark: Material
 var _white: Material
 var _wood: Material
+var _font := SystemFont.new()
+var _signs: Array = []          # [text, place in the model, letter height] for the model being built
 var _solid := StaticBody3D.new()
 
 
 ## True if this outline is drawn here and the city builder should skip it.
 static func replaces(building: Dictionary) -> bool:
 	var site: Dictionary = SITES.get(String(building.get("name", "")), {})
-	return not site.is_empty() and not bool(site.get("keep", false))
+	if not site.is_empty():
+		return not bool(site.get("keep", false))
+	var outline: Array = building.get("pts", [])
+	if outline.is_empty() or absf(float(outline[0][0]) - PINA_HAMA[0]) > 40.0 or absf(float(outline[0][1]) - PINA_HAMA[1]) > 40.0:
+		return false
+	var polygon := PackedVector2Array()
+	for pair: Array in outline:
+		polygon.append(Vector2(pair[0], pair[1]))
+	for inside: Vector2 in CLEARED:
+		if Geometry2D.is_point_in_polygon(inside, polygon):
+			return true
+	return false
+
+
+## Where the bakery row stands, for anything that needs a spot beside it.
+static func pina_hama_place() -> Transform3D:
+	return Transform3D(Basis(Vector3.UP, PINA_HAMA[2]), Vector3(PINA_HAMA[0], 0.0, PINA_HAMA[1]))
+
+
+## Where the queue stands: on the pavement in front of the service window.
+static func pina_hama_queue() -> Vector3:
+	return pina_hama_place() * Vector3(PINA_HAMA_WINDOW, 0.0, PINA_HAMA_SIZE.y * 0.5 + 1.4)
 
 
 func build(city: CityBuilder) -> void:
@@ -65,6 +99,7 @@ func build(city: CityBuilder) -> void:
 	_dark = CityMaterials.color(Color(0.05, 0.06, 0.08), 0.3, 0.2)
 	_white = CityMaterials.color(Color(0.92, 0.92, 0.9), 0.6)
 	_wood = CityMaterials.color(Color(0.36, 0.25, 0.16), 0.85)
+	_font.font_names = PackedStringArray(["Arial", "Segoe UI", "DejaVu Sans", "Noto Sans Hebrew"])
 	_solid.name = "LandmarkCollision"
 	add_child(_solid)
 
@@ -80,6 +115,7 @@ func build(city: CityBuilder) -> void:
 	for item: Array in STREET_SET:
 		var turn := Basis(Vector3.UP, float(item[2]))
 		_place(String(item[3]), Transform3D(turn, Vector3(float(item[0]), 0.0, float(item[1]))), 0.0, 0.0, 0.0)
+	_place("pina_hama", pina_hama_place(), PINA_HAMA_SIZE.x, PINA_HAMA_SIZE.y, 0.0)
 
 
 ## A photo material, or a flat colour where the textures are not installed.
@@ -128,6 +164,7 @@ func _frame(outline: Array) -> Dictionary:
 func _place(model: String, place: Transform3D, length: float, width: float, height: float) -> void:
 	var kit := MeshKit.new()
 	var blocks: Array[AABB] = []      # what you bump into, in the model's own space
+	_signs.clear()
 	match model:
 		"pyramid_house":
 			_terraced_rows(kit, blocks, length, width, 3, 2.4, 0.0, 5.0, _plaster, true)
@@ -151,6 +188,8 @@ func _place(model: String, place: Transform3D, length: float, width: float, heig
 			_playground(kit, blocks)
 		"pylon":
 			_pylon(kit, blocks)
+		"pina_hama":
+			_pina_hama(kit, blocks, length, width)
 		_:
 			push_warning("Landmarks: no model called %s" % model)
 			return
@@ -159,6 +198,17 @@ func _place(model: String, place: Transform3D, length: float, width: float, heig
 	body.mesh = kit.build()
 	body.transform = place
 	add_child(body)
+	for lettering: Array in _signs:
+		var label := Label3D.new()
+		label.text = String(lettering[0])
+		label.font = _font
+		label.font_size = 160
+		label.pixel_size = float(lettering[2]) / 160.0
+		label.outline_size = 0
+		label.modulate = Color.WHITE
+		label.transform = lettering[1]
+		label.visibility_range_end = 220.0
+		body.add_child(label)
 	for block in blocks:
 		var shape := CollisionShape3D.new()
 		var box := BoxShape3D.new()
@@ -370,6 +420,107 @@ func _pylon(kit: MeshKit, blocks: Array[AABB]) -> void:
 			kit.cylinder(_dark, 0.06, 0.3, Vector3(cup, arm + 0.2, 0.0), Basis.IDENTITY, -1.0, 6)
 	kit.box(steel, Vector3(0.9, 1.1, 0.7), Vector3(0.0, 8.6, 0.0))                   # the transformer
 	blocks.append(AABB(Vector3(-foot, 0.0, -foot), Vector3(foot * 2.0, tall, foot * 2.0)))
+
+
+# --- the corner of KKL street and Derekh Hebron -----------------------------------------
+
+## Ha-Pina Ha-Hama: a single-storey row of old sandstone with arched
+## doorways and painted metal doors, a tiled lean-to over the pavement, and
+## at the Derekh Hebron end the bakery itself: a wide service window under
+## a striped awning and a big red sign on the roof. Along KKL street, past
+## the row, a poinciana and a black-framed seating enclosure with clear
+## plastic sides.
+func _pina_hama(kit: MeshKit, blocks: Array[AABB], length: float, depth: float) -> void:
+	var blue := CityMaterials.color(Color(0.2, 0.45, 0.7), 0.55, 0.3)
+	var pink := CityMaterials.color(Color(0.85, 0.45, 0.6), 0.55, 0.3)
+	var red := CityMaterials.color(Color(0.78, 0.1, 0.1), 0.55)
+	var steel := CityMaterials.color(Color(0.5, 0.51, 0.53), 0.45, 0.7)
+	var black := CityMaterials.color(Color(0.07, 0.07, 0.08), 0.5, 0.4)
+	var half := length * 0.5
+	var front := depth * 0.5
+	var tall := 4.2                                  # one high Ottoman storey
+
+	_block(kit, blocks, _stone, Vector3(length, tall, depth), 0.0, 0.0, 0.0)
+	kit.box(_stone, Vector3(length + 0.3, 0.3, depth + 0.3), Vector3(0.0, tall + 0.15, 0.0))        # the cornice
+
+	# Four arched doorways along KKL street, each with its own painted door
+	# and an air conditioner over it.
+	var doors: Array[Material] = [blue, pink, blue, pink]
+	for bay in doors.size():
+		var x := -half + 2.2 + bay * 3.6
+		_arch(kit, x, 0.0, front, 2.2, 2.3, 1.0)
+		kit.box(doors[bay], Vector3(1.9, 2.2, 0.06), Vector3(x, 1.1, front + 0.1))
+		kit.box(_white, Vector3(0.8, 0.3, 0.3), Vector3(x + 1.5, 3.7, front + 0.15))
+	# The tiled lean-to over them, on thin steel posts.
+	var lean_to := 3.6 * doors.size()
+	var lean_x := -half + lean_to * 0.5 + 0.3
+	kit.box(_tiles, Vector3(lean_to, 0.1, 2.5), Vector3(lean_x, 3.05, front + 1.15), Basis(Vector3.RIGHT, 0.3))
+	for post in doors.size() + 1:
+		kit.box(steel, Vector3(0.07, 2.7, 0.07), Vector3(lean_x - lean_to * 0.5 + post * 3.6, 1.35, front + 2.25))
+
+	# The bakery on the corner: the service window and its counter...
+	var window := PINA_HAMA_WINDOW
+	kit.box(_dark, Vector3(3.8, 1.4, 0.1), Vector3(window, 1.8, front + 0.02))
+	kit.box(steel, Vector3(4.0, 0.08, 0.6), Vector3(window, 1.08, front + 0.3))
+	kit.box(_white, Vector3(4.2, 0.5, 0.08), Vector3(window, 2.85, front + 0.05))               # the price board
+	# ...a second window round the corner, towards Derekh Hebron...
+	kit.box(_dark, Vector3(0.1, 1.4, 3.0), Vector3(half + 0.02, 1.8, front - 2.4))
+	kit.box(steel, Vector3(0.5, 0.08, 3.2), Vector3(half + 0.25, 1.08, front - 2.4))
+	for arched in 3:
+		kit.box(_dark, Vector3(0.1, 2.0, 1.2), Vector3(half + 0.02, 1.9, front - 6.5 - arched * 3.4))
+	# ...and a red-and-white striped awning over both.
+	for stripe in 8:
+		var paint: Material = red if stripe % 2 == 0 else _white
+		kit.box(paint, Vector3(0.55, 0.06, 1.5), Vector3(window - 1.93 + stripe * 0.55, 3.2, front + 0.7), Basis(Vector3.RIGHT, 0.35))
+		if stripe < 6:
+			kit.box(paint, Vector3(1.5, 0.06, 0.55), Vector3(half + 0.7, 3.2, front - 1.0 - stripe * 0.55), Basis(Vector3.FORWARD, 0.35))
+
+	# The roof sign, turned to face the junction. Our own lettering: the
+	# real one shares its frame with a soft-drink advert, which stays out.
+	var board := Transform3D(Basis(Vector3.UP, PI / 4.0), Vector3(half - 4.2, tall + 2.0, front - 4.2))
+	kit.box(red, Vector3(7.0, 2.2, 0.2), board.origin, board.basis)
+	kit.box(_white, Vector3(7.3, 0.12, 0.24), board.origin + Vector3(0.0, 1.16, 0.0), board.basis)
+	kit.box(_white, Vector3(7.3, 0.12, 0.24), board.origin + Vector3(0.0, -1.16, 0.0), board.basis)
+	for leg: float in [-2.8, 2.8]:
+		kit.box(steel, Vector3(0.1, 1.0, 0.1), board * Vector3(leg, -1.6, 0.0))
+	_signs.append(["הפינה החמה", board * Transform3D(Basis.IDENTITY, Vector3(0.0, 0.15, 0.12)), 1.1])
+	_signs.append(["סמבוסק · בורקס · פתוח 24 שעות", board * Transform3D(Basis.IDENTITY, Vector3(0.0, -0.72, 0.12)), 0.36])
+
+	# What collects on such a roof: dishes, a water tank, a solar panel.
+	for dish: float in [-6.5, -1.0]:
+		kit.box(steel, Vector3(0.06, 0.9, 0.06), Vector3(dish, tall + 0.6, front - 1.2))
+		kit.cylinder(_white, 0.45, 0.05, Vector3(dish, tall + 1.1, front - 1.05), Basis(Vector3.RIGHT, 1.1), -1.0, 12)
+	kit.cylinder(_white, 0.45, 1.3, Vector3(-3.5, tall + 1.25, 0.0), Basis(Vector3.FORWARD, PI / 2.0))
+	kit.box(steel, Vector3(1.6, 0.6, 0.9), Vector3(-3.5, tall + 0.3, 0.0))
+	kit.box(_dark, Vector3(1.8, 0.06, 1.1), Vector3(-3.5, tall + 0.5, 1.2), Basis(Vector3.RIGHT, 0.6))
+
+	# Up KKL street from the row: the poinciana, wide and flat, in flower...
+	var bark := CityMaterials.color(Color(0.33, 0.27, 0.21), 0.95)
+	var leaves := CityMaterials.color(Color(0.2, 0.42, 0.16), 0.9)
+	var flowers := CityMaterials.color(Color(0.85, 0.22, 0.1), 0.85)
+	var tree := Vector3(-half - 3.5, 0.0, front + 1.6)
+	kit.cylinder(bark, 0.3, 3.4, tree + Vector3(0.0, 1.7, 0.0), Basis.IDENTITY, 0.22)
+	blocks.append(AABB(tree + Vector3(-0.3, 0.0, -0.3), Vector3(0.6, 3.4, 0.6)))
+	kit.ball(leaves, 4.6, tree + Vector3(0.0, 4.8, 0.0), 0.4, 12)
+	kit.ball(leaves, 3.0, tree + Vector3(2.2, 5.3, -1.0), 0.45, 10)
+	kit.ball(flowers, 3.4, tree + Vector3(-0.6, 5.5, 0.4), 0.3, 10)
+
+	# ...and a seating enclosure: a black frame with clear plastic sheets.
+	var glass := CityMaterials.glass()
+	var seat_len := 8.0
+	var seat_deep := 2.6
+	var seat := Vector3(-half - 12.5, 0.0, front + 0.3 + seat_deep * 0.5)
+	for end: float in [-0.5, 0.0, 0.5]:
+		for edge: float in [-0.5, 0.5]:
+			kit.box(black, Vector3(0.1, 2.6, 0.1), seat + Vector3(end * seat_len, 1.3, edge * seat_deep))
+	kit.box(black, Vector3(seat_len + 0.2, 0.12, seat_deep + 0.2), seat + Vector3(0.0, 2.66, 0.0))
+	kit.box(glass, Vector3(seat_len, 2.0, 0.03), seat + Vector3(0.0, 1.3, seat_deep * 0.5))
+	blocks.append(AABB(seat + Vector3(-seat_len * 0.5, 0.0, seat_deep * 0.5 - 0.1), Vector3(seat_len, 2.6, 0.2)))
+	kit.box(glass, Vector3(0.03, 2.0, seat_deep), seat + Vector3(-seat_len * 0.5, 1.3, 0.0))
+	blocks.append(AABB(seat + Vector3(-seat_len * 0.5 - 0.1, 0.0, -seat_deep * 0.5), Vector3(0.2, 2.6, seat_deep)))
+	for table: float in [-2.6, 0.0, 2.6]:
+		kit.cylinder(_white, 0.4, 0.04, seat + Vector3(table, 0.75, 0.0), Basis.IDENTITY, -1.0, 12)
+		kit.box(black, Vector3(0.06, 0.75, 0.06), seat + Vector3(table, 0.375, 0.0))
 
 
 # --- the Ottoman town ------------------------------------------------------------------

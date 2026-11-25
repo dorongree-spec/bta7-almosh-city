@@ -1,7 +1,7 @@
 ## The two story missions, run as one small state machine.
-##   1. "סמבוסק מהפינה החמה": Mum wants sambusak from Ha-Pina Ha-Hama on KKL
-##      street. Get there, stand in the queue, and bring it home to Avraham
-##      Avinu 15 before it goes cold (any car, or on foot if you are an optimist).
+##   1. "סמבוסק מהפינה החמה": Mum wants sambusak from Ha-Pina Ha-Hama, on the
+##      corner of KKL street and Derekh Hebron. Get there, stand in the
+##      queue, and bring it home to Avraham Avinu 15 before it goes cold (any car, or on foot if you are an optimist).
 ##   2. "הסוברה של אבא": find Dad's towed Subara, take it from the municipal
 ##      lot and get it home with city inspectors on your tail.
 ## Texts come from data/world.json so the jokes stay out of the code.
@@ -16,8 +16,8 @@ signal reward(amount: int)
 enum State { M1_GO, M1_QUEUE, M1_HOME, M2_OFFER, M2_SULEIMAN, M2_LOT, M2_TAKE, M2_ESCAPE, DONE }
 
 ## Real-world anchors (lat, lon); each one is snapped to the nearest road.
+## The bakery is not here: its queue spot comes from Landmarks, which builds it.
 const PLACES := {
-	"pina_hama": Vector2(31.24056, 34.78802),  # Ha-Pina Ha-Hama, KKL 2 (the map's origin)
 	"home": Vector2(31.26306, 34.79348),       # Avraham Avinu 15, where the game opens
 	"emek_sara": Vector2(31.2330, 34.8150),  # industrial zone
 	"dad": Vector2(31.2440, 34.7760),        # Shchuna Tet
@@ -171,7 +171,7 @@ func _enter(next: State) -> void:
 	match state:
 		State.M1_GO:
 			_car = null
-			_aim(_road_spot("pina_hama").walk, "סע לפינה החמה בקק\"ל 2, להביא סמבוסק לאמא")
+			_aim(Landmarks.pina_hama_queue(), "סע לפינה החמה בקק\"ל 2, להביא סמבוסק לאמא")
 		State.M1_QUEUE:
 			_queue_t = 0.0
 			_queue_said = 0
