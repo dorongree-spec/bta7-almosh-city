@@ -167,7 +167,10 @@ func _hero_and_car() -> void:
 	var car := _car("subara_dl", Vector3(p.x, 0.0, p.y), yaw)
 	var hero_at := car.global_position - car.global_transform.basis.x * 1.15 + car.global_transform.basis.z * 0.4
 	_focus_here(hero_at + Vector3(30, 0, 30))
-	var hero := Humanoid.create(main.player.humanoid.look if main.player.get("humanoid") else Humanoid.random_look())
+	var hero_look: Dictionary = (main.player.humanoid.look if main.player.get("humanoid") else Humanoid.random_look()).duplicate()
+	hero_look["pose"] = 2   # leaning on his car, arms crossed: not squaring up for a fight
+	hero_look["shoes"] = "sneaker"
+	var hero := Humanoid.create(hero_look)
 	main.add_child(hero)
 	hero.global_position = hero_at
 	hero.look_at(hero_at + car.global_transform.basis.z * 3.0 - car.global_transform.basis.x, Vector3.UP, true)
