@@ -540,7 +540,7 @@ func _end_intro() -> void:
 	events.enabled = true
 	front.end_intro()
 	front.area("אברהם אבינו 15")
-	hud.say("אמא", "קמת סוף סוף? תביא לחם, תעבור בסורוקה, ואל תחנה איפה שחנית בפעם הקודמת.", 6.0)
+	hud.say("אמא", "קמת סוף סוף? באים אורחים. תביא סמבוסק מהפינה החמה, שיגיע חם, ואל תחנה איפה שחנית בפעם הקודמת.", 6.0)
 
 
 ## Moves the camera along the opening shot; `delta` is the frame time.
